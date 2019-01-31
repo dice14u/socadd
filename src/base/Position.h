@@ -1,6 +1,5 @@
 #include <boost/units/systems/si/length.hpp>
 #include <boost/units/base_units/si/meter.hpp>
-#include
 #include <boost/units/systems/si/time.hpp>
 #include <boost/units/systems/angle/degrees.hpp>
 #include <boost/units/systems/si/plane_angle.hpp>
@@ -26,10 +25,15 @@ namespace base {
     quantity<si::length, T> haversine(ENU<T> p1, ENU<T> p2) {
         double earthRadiusKm = 6371.0;
 
-        T lat1 = static_cast<quantity<si::plane_angle>>(*p1.north);
-        T lat2 = static_cast<quantity<si::plane_angle>>(*p2.north);
-        T lon1 = static_cast<quantity<si::plane_angle>>(*p1.east);
-        T lon2 = static_cast<quantity<si::plane_angle>>(*p2.east);
+        auto toRadianT = [](quantity<degree::plane_angle, T> val) -> T {
+            return static_cast<quantity<si::plane_angle, T>>(val).value();
+        };
+
+        T lat1 = toRadianT(*p1.north);
+        T lat2 = toRadianT(*p2.north);
+        T lon1 = toRadianT(*p1.east);
+        T lon2 = toRadianT(*p2.east);
+
         T u = sin((lat2 - lat1)/2);
         T v = sin((lon2 - lon1)/2);
 
@@ -37,8 +41,22 @@ namespace base {
     }
 
     template <typename T>
-    quantity<degree::plane_angle, T> bearing(ENU<T> p1, ENU<T> p2) {
-        return nullptr;
+    quantity<si::plane_angle, T> bearing(ENU<T> p1, ENU<T> p2) {
+        auto toRadianT = [](quantity<degree::plane_angle, T> val) -> T {
+            return static_cast<quantity<si::plane_angle, T>>(val).value();
+        };
+
+        T lat1 = toRadianT(*p1.north);
+        T lat2 = toRadianT(*p2.north);
+        T lon1 = toRadianT(*p1.east);
+        T lon2 = toRadianT(*p2.east);
+
+        T u = sin(lon2 - lon1) * cos(lat2);
+        T v = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2-lon1);
+
+        T result = atan2(u, v);
+
+        return result * si::radians;
     }
 
     template <typename  size>

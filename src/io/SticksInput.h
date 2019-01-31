@@ -1,5 +1,3 @@
-using namespace add/io
-
 template <class Authority>
 class SticksInput {
     public:

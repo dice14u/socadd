@@ -1,24 +1,24 @@
 #include <iostream>
-#include <boost/units/systems/si.hpp>
-#include <boost/units/systems/si/length.hpp>
-#include <boost/units/base_units/si/meter.hpp>
-#include <boost/units/quantity.hpp>
-#include <boost/units/io.hpp>
+#include <mutex>
+#include <thread>
 #include "base/Position.h"
-#include "sensors/Accelerometer.h"
+#include "condition_variable"
 
 using namespace std;
-using namespace boost::units;
+
 
 int main()
 {
-    base::ENU<double> p;
-    p.east = 2.7 * degree::degrees;
+    thread workWaiter;
+    cout << "app running press ctrl+c to stop" << endl;
+    condition_variable cv;
+    mutex space;
 
-    quantity<si::length, double> l;
-    l = 2.7 * si::meters;
+    lock_guard<mutex> guard(space);
+    unique_lock<mutex> lk(space);
+    cout << "about to block" << endl;
 
-    cout << *p.east << "and" << (p.north.has_value()? "yes" : "no") << endl;
 
-    return 0;
+    cv.wait(lk);
+    cout << "signaled" << endl;
 }
